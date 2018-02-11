@@ -64,7 +64,6 @@ public class HttpVerticle extends AbstractVerticle {
   }
 
   private void handleGetEmployee(RoutingContext routingContext) {
-    log.info("Bitches");
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
     if (empId != null) {

@@ -1,5 +1,6 @@
 package com.philaporter.verticles;
 
+import com.philaporter.Main;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -8,14 +9,17 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /** @author Philip Porter */
 public class HttpVerticle extends AbstractVerticle {
 
-  static final Logger log = Logger.getLogger("HttpVerticle");
+  private static Logger log = null;
   private Map<String, JsonObject> employees = new HashMap<>();
 
   private void addEmployee(JsonObject employee) {
@@ -47,7 +51,7 @@ public class HttpVerticle extends AbstractVerticle {
     router.post("/employees/:empId").handler(this::handleAddEmployee);
     router.delete("/employees/:empId").handler(this::handleRemoveEmployee);
     router.put("/employees/:empId").handler(this::handleUpdateAddEmployee);
-    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+    vertx.createHttpServer().requestHandler(router::accept).listen(Main.config.get("http.port"));
   }
 
   private void handleGetEmployees(RoutingContext routingContext) {
@@ -60,6 +64,7 @@ public class HttpVerticle extends AbstractVerticle {
   }
 
   private void handleGetEmployee(RoutingContext routingContext) {
+    log.info("Bitches");
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
     if (empId != null) {
@@ -116,5 +121,16 @@ public class HttpVerticle extends AbstractVerticle {
 
   private void sendError(int statusCode, HttpServerResponse response) {
     response.setStatusCode(statusCode).end();
+  }
+
+  {
+    InputStream stream =
+        HttpVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
+    try {
+      LogManager.getLogManager().readConfiguration(stream);
+    } catch (IOException e) {
+      System.out.println("The logging.properties isn't right");
+    }
+    log = Logger.getLogger(HttpVerticle.class.getName());
   }
 }

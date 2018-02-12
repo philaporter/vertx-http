@@ -2,6 +2,7 @@ package com.philaporter.verticles;
 
 import com.philaporter.Main;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -21,6 +22,7 @@ public class HttpVerticle extends AbstractVerticle {
 
   private static Logger log = null;
   private Map<String, JsonObject> employees = new HashMap<>();
+  private EventBus eb = null;
 
   private void addEmployee(JsonObject employee) {
     employees.put(employee.getString("empId"), employee);
@@ -44,6 +46,7 @@ public class HttpVerticle extends AbstractVerticle {
   @Override
   public void start() {
     mockData();
+    eb = vertx.eventBus();
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/employees").handler(this::handleGetEmployees);
@@ -57,6 +60,7 @@ public class HttpVerticle extends AbstractVerticle {
   private void handleGetEmployees(RoutingContext routingContext) {
     JsonArray json = new JsonArray();
     employees.forEach((k, v) -> json.add(v));
+    eb.publish("processingVerticle", json.encodePrettily());
     routingContext
         .response()
         .putHeader("content-type", "application/json")
@@ -67,6 +71,7 @@ public class HttpVerticle extends AbstractVerticle {
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
     if (empId != null) {
+      eb.publish("processingVerticle", employees.get(empId).encodePrettily());
       response
           .putHeader("content-type", "application/json")
           .end(employees.get(empId).encodePrettily());
@@ -82,6 +87,7 @@ public class HttpVerticle extends AbstractVerticle {
       JsonObject employee = routingContext.getBodyAsJson();
       if (employee != null) {
         employees.put(empId, employee);
+        eb.publish("processingVerticle", employees.get(empId).encodePrettily());
         response.end();
       } else {
         sendError(400, response);
@@ -97,6 +103,7 @@ public class HttpVerticle extends AbstractVerticle {
     if (empId != null) {
       JsonObject employee = routingContext.getBodyAsJson();
       employees.replace(empId, employee);
+      eb.publish("processingVerticle", employees.get(empId).encodePrettily());
       response.end();
     } else {
       sendError(400, response);
@@ -109,6 +116,7 @@ public class HttpVerticle extends AbstractVerticle {
     if (empId != null) {
       if (empId != null) {
         employees.remove(empId);
+        eb.publish("processingVerticle", employees.get(empId).encodePrettily());
         response.end();
       } else {
         sendError(400, response);

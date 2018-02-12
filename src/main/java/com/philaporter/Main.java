@@ -1,6 +1,7 @@
 package com.philaporter;
 
 import com.philaporter.verticles.HttpVerticle;
+import com.philaporter.verticles.ProcessingVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 
@@ -28,8 +29,21 @@ public class Main {
         res -> {
           if (res.succeeded()) {
             log.info("Successfully deployed HttpVerticle with id: " + res.result());
+            vertx.deployVerticle(
+                ProcessingVerticle.class.getName(),
+                processingRes -> {
+                  if (processingRes.succeeded()) {
+                    log.info(
+                        "Successfully deployed ProcessingVerticle with id: "
+                            + processingRes.result());
+                  } else {
+                    log.warning("ProcessingVerticle failed to deploy");
+                    vertx.close();
+                  }
+                });
           } else {
             log.warning("HttpVerticle deploy failed");
+            vertx.close();
           }
         });
   }

@@ -28,7 +28,7 @@ public class HttpVerticle extends AbstractVerticle {
     employees.put(employee.getString("empId"), employee);
   }
 
-  private void mockData() {
+  private void setup() throws IOException {
     addEmployee(
         new JsonObject()
             .put("empId", "a1b2c3d4")
@@ -41,11 +41,16 @@ public class HttpVerticle extends AbstractVerticle {
             .put("fName", "Alan")
             .put("lName", "Jones")
             .put("salary", 120000));
+
+    // TODO: Replace this logging setup with something better
+    InputStream stream = HttpVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
+    LogManager.getLogManager().readConfiguration(stream);
+    log = Logger.getLogger(HttpVerticle.class.getName());
   }
 
   @Override
-  public void start() {
-    mockData();
+  public void start() throws IOException {
+    setup();
     eb = vertx.eventBus();
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
@@ -54,7 +59,10 @@ public class HttpVerticle extends AbstractVerticle {
     router.post("/employees/:empId").handler(this::handleAddEmployee);
     router.delete("/employees/:empId").handler(this::handleRemoveEmployee);
     router.put("/employees/:empId").handler(this::handleUpdateAddEmployee);
-    vertx.createHttpServer().requestHandler(router::accept).listen(Main.config.get("http.port"));
+    vertx
+        .createHttpServer()
+        .requestHandler(router::accept)
+        .listen(Main.config.getInteger("httpPort"));
   }
 
   private void handleGetEmployees(RoutingContext routingContext) {
@@ -128,16 +136,5 @@ public class HttpVerticle extends AbstractVerticle {
 
   private void sendError(int statusCode, HttpServerResponse response) {
     response.setStatusCode(statusCode).end();
-  }
-
-  {
-    InputStream stream =
-        HttpVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
-    try {
-      LogManager.getLogManager().readConfiguration(stream);
-    } catch (IOException e) {
-      System.out.println("The logging.properties isn't right");
-    }
-    log = Logger.getLogger(HttpVerticle.class.getName());
   }
 }

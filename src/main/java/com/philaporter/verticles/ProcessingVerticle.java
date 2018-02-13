@@ -14,23 +14,17 @@ public class ProcessingVerticle extends AbstractVerticle {
   private EventBus eb = null;
 
   @Override
-  public void start() {
+  public void start() throws IOException {
+    // TODO: Replace this logging setup with something better
+    InputStream stream = ProcessingVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
+    LogManager.getLogManager().readConfiguration(stream);
+    log = Logger.getLogger(ProcessingVerticle.class.getName());
+
     eb = vertx.eventBus();
     eb.consumer(
         "processingVerticle",
         data -> {
           System.out.println(data.body().toString());
         });
-  }
-
-  {
-    InputStream stream =
-        ProcessingVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
-    try {
-      LogManager.getLogManager().readConfiguration(stream);
-    } catch (IOException e) {
-      System.out.println("The logging.properties isn't right");
-    }
-    log = Logger.getLogger(ProcessingVerticle.class.getName());
   }
 }

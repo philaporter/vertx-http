@@ -18,12 +18,12 @@ public class ProcessingVerticle extends AbstractVerticle {
   public void start() throws IOException {
     // TODO: Replace this logging setup with something better
     InputStream stream =
-        ProcessingVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
+            ProcessingVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
     LogManager.getLogManager().readConfiguration(stream);
     log = Logger.getLogger(ProcessingVerticle.class.getName());
 
     eb = vertx.eventBus();
     final ProcessingHandler handler = new ProcessingHandler();
-    eb.consumer("processingVerticle", handler::handle);
+    eb.consumer("processingHandler", handler::handle);
   }
 }

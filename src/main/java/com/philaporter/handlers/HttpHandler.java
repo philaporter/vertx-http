@@ -2,8 +2,10 @@ package com.philaporter.handlers;
 
 import com.philaporter.verticles.HttpVerticle;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -12,6 +14,7 @@ public class HttpHandler {
 
   private Vertx vertx = null;
   private EventBus eb = null;
+  public static final String PROCESSING_HANDLER = "processingHandler";
 
   public HttpHandler(Vertx vertx) {
     this.vertx = vertx;
@@ -19,9 +22,13 @@ public class HttpHandler {
   }
 
   public void handleGetEmployees(RoutingContext routingContext) {
-    JsonArray json = new JsonArray();
-    HttpVerticle.employees.forEach((k, v) -> json.add(v));
-    eb.publish("processingVerticle", json.encodePrettily());
+    JsonArray list = new JsonArray();
+    HttpVerticle.employees.forEach((k, v) -> list.add(v));
+    final JsonObject json =
+        new JsonObject()
+            .put("employee", list)
+            .put("action", "getAll");
+    eb.publish(PROCESSING_HANDLER, json);
     routingContext
         .response()
         .putHeader("content-type", "application/json")
@@ -31,13 +38,17 @@ public class HttpHandler {
   public void handleGetEmployee(RoutingContext routingContext) {
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
-    if (empId != null) {
-      eb.publish("processingVerticle", HttpVerticle.employees.get(empId).encodePrettily());
+    if (empId != null && HttpVerticle.employees.containsKey(empId)) {
+      final JsonObject json =
+          new JsonObject()
+              .put("employee", HttpVerticle.employees.get(empId))
+              .put("action", "get");
+      eb.publish(PROCESSING_HANDLER, json);
       response
           .putHeader("content-type", "application/json")
-          .end(HttpVerticle.employees.get(empId).encodePrettily());
+          .end(json.encodePrettily());
     } else {
-      sendError(400, response);
+      sendError(418, response);
     }
   }
 
@@ -48,13 +59,19 @@ public class HttpHandler {
       JsonObject employee = routingContext.getBodyAsJson();
       if (employee != null) {
         HttpVerticle.employees.put(empId, employee);
-        eb.publish("processingVerticle", HttpVerticle.employees.get(empId).encodePrettily());
-        response.end();
+        final JsonObject json =
+            new JsonObject()
+                .put("employee", employee)
+                .put("action", "add");
+        eb.publish(PROCESSING_HANDLER, json);
+        response
+            .putHeader("content-type", "application/json")
+            .end(json.encodePrettily());
       } else {
-        sendError(400, response);
+        sendError(418, response);
       }
     } else {
-      sendError(400, response);
+      sendError(418, response);
     }
   }
 
@@ -63,27 +80,39 @@ public class HttpHandler {
     HttpServerResponse response = routingContext.response();
     if (empId != null) {
       JsonObject employee = routingContext.getBodyAsJson();
-      HttpVerticle.employees.replace(empId, employee);
-      eb.publish("processingVerticle", HttpVerticle.employees.get(empId).encodePrettily());
-      response.end();
+      if (employee != null) {
+        HttpVerticle.employees.replace(empId, employee);
+        final JsonObject json =
+            new JsonObject()
+                .put("employee", employee)
+                .put("action", "update");
+        eb.publish(PROCESSING_HANDLER, json);
+        response
+            .putHeader("content-type", "application/json")
+            .end(json.encodePrettily());
+      } else {
+        sendError(418, response);
+      }
     } else {
-      sendError(400, response);
+      sendError(418, response);
     }
   }
 
   public void handleRemoveEmployee(RoutingContext routingContext) {
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
-    if (empId != null) {
-      if (empId != null) {
-        HttpVerticle.employees.remove(empId);
-        eb.publish("processingVerticle", HttpVerticle.employees.get(empId).encodePrettily());
-        response.end();
-      } else {
-        sendError(400, response);
-      }
+    if (empId != null && HttpVerticle.employees.containsKey(empId)) {
+      JsonObject json =
+          new JsonObject()
+              .put("employee", HttpVerticle.employees.get(empId))
+              .put("action", "remove");
+      eb.publish(PROCESSING_HANDLER, json);
+      HttpVerticle.employees.remove(empId);
+      response
+              .putHeader("content-type", "application/json")
+              .end(json.encodePrettily());
     } else {
-      sendError(400, response);
+      sendError(418, response);
     }
   }
 

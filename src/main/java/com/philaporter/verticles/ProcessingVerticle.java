@@ -1,5 +1,6 @@
 package com.philaporter.verticles;
 
+import com.philaporter.handlers.ProcessingHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 
@@ -22,10 +23,7 @@ public class ProcessingVerticle extends AbstractVerticle {
     log = Logger.getLogger(ProcessingVerticle.class.getName());
 
     eb = vertx.eventBus();
-    eb.consumer(
-        "processingVerticle",
-        data -> {
-          System.out.println(data.body().toString());
-        });
+    final ProcessingHandler handler = new ProcessingHandler();
+    eb.consumer("processingVerticle", handler::handle);
   }
 }

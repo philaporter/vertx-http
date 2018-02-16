@@ -1,6 +1,7 @@
 package com.philaporter.verticles;
 
 import com.philaporter.Main;
+import com.philaporter.handlers.HttpHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
 public class HttpVerticle extends AbstractVerticle {
 
   private static Logger log = null;
-  private Map<String, JsonObject> employees = new HashMap<>();
+  public static Map<String, JsonObject> employees = new HashMap<>();
   private EventBus eb = null;
 
   private void addEmployee(JsonObject employee) {
@@ -43,7 +44,8 @@ public class HttpVerticle extends AbstractVerticle {
             .put("salary", 120000));
 
     // TODO: Replace this logging setup with something better
-    InputStream stream = HttpVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
+    InputStream stream =
+        HttpVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
     LogManager.getLogManager().readConfiguration(stream);
     log = Logger.getLogger(HttpVerticle.class.getName());
   }
@@ -52,89 +54,17 @@ public class HttpVerticle extends AbstractVerticle {
   public void start() throws IOException {
     setup();
     eb = vertx.eventBus();
+    final HttpHandler handler = new HttpHandler(vertx);
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
-    router.get("/employees").handler(this::handleGetEmployees);
-    router.get("/employees/:empId").handler(this::handleGetEmployee);
-    router.post("/employees/:empId").handler(this::handleAddEmployee);
-    router.delete("/employees/:empId").handler(this::handleRemoveEmployee);
-    router.put("/employees/:empId").handler(this::handleUpdateAddEmployee);
+    router.get("/employees").handler(handler::handleGetEmployees);
+    router.get("/employees/:empId").handler(handler::handleGetEmployee);
+    router.post("/employees/:empId").handler(handler::handleAddEmployee);
+    router.delete("/employees/:empId").handler(handler::handleRemoveEmployee);
+    router.put("/employees/:empId").handler(handler::handleUpdateAddEmployee);
     vertx
         .createHttpServer()
         .requestHandler(router::accept)
         .listen(Main.config.getInteger("httpPort"));
-  }
-
-  private void handleGetEmployees(RoutingContext routingContext) {
-    JsonArray json = new JsonArray();
-    employees.forEach((k, v) -> json.add(v));
-    eb.publish("processingVerticle", json.encodePrettily());
-    routingContext
-        .response()
-        .putHeader("content-type", "application/json")
-        .end(json.encodePrettily());
-  }
-
-  private void handleGetEmployee(RoutingContext routingContext) {
-    String empId = routingContext.request().getParam("empId");
-    HttpServerResponse response = routingContext.response();
-    if (empId != null) {
-      eb.publish("processingVerticle", employees.get(empId).encodePrettily());
-      response
-          .putHeader("content-type", "application/json")
-          .end(employees.get(empId).encodePrettily());
-    } else {
-      sendError(400, response);
-    }
-  }
-
-  private void handleAddEmployee(RoutingContext routingContext) {
-    String empId = routingContext.request().getParam("empId");
-    HttpServerResponse response = routingContext.response();
-    if (empId != null) {
-      JsonObject employee = routingContext.getBodyAsJson();
-      if (employee != null) {
-        employees.put(empId, employee);
-        eb.publish("processingVerticle", employees.get(empId).encodePrettily());
-        response.end();
-      } else {
-        sendError(400, response);
-      }
-    } else {
-      sendError(400, response);
-    }
-  }
-
-  private void handleUpdateAddEmployee(RoutingContext routingContext) {
-    String empId = routingContext.request().getParam("empId");
-    HttpServerResponse response = routingContext.response();
-    if (empId != null) {
-      JsonObject employee = routingContext.getBodyAsJson();
-      employees.replace(empId, employee);
-      eb.publish("processingVerticle", employees.get(empId).encodePrettily());
-      response.end();
-    } else {
-      sendError(400, response);
-    }
-  }
-
-  private void handleRemoveEmployee(RoutingContext routingContext) {
-    String empId = routingContext.request().getParam("empId");
-    HttpServerResponse response = routingContext.response();
-    if (empId != null) {
-      if (empId != null) {
-        employees.remove(empId);
-        eb.publish("processingVerticle", employees.get(empId).encodePrettily());
-        response.end();
-      } else {
-        sendError(400, response);
-      }
-    } else {
-      sendError(400, response);
-    }
-  }
-
-  private void sendError(int statusCode, HttpServerResponse response) {
-    response.setStatusCode(statusCode).end();
   }
 }

@@ -16,7 +16,8 @@ public class ProcessingVerticle extends AbstractVerticle {
   @Override
   public void start() throws IOException {
     // TODO: Replace this logging setup with something better
-    InputStream stream = ProcessingVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
+    InputStream stream =
+        ProcessingVerticle.class.getClassLoader().getResourceAsStream("logging.properties");
     LogManager.getLogManager().readConfiguration(stream);
     log = Logger.getLogger(ProcessingVerticle.class.getName());
 

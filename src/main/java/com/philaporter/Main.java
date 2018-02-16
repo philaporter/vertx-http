@@ -26,6 +26,7 @@ public class Main {
     LogManager.getLogManager().readConfiguration(stream);
     log = Logger.getLogger(Main.class.getName());
 
+    printBanner();
     Vertx vertx = Vertx.vertx();
     ConfigStoreOptions fileStore =
         new ConfigStoreOptions()
@@ -37,9 +38,8 @@ public class Main {
     retriever.getConfig(
         ar -> {
           if (ar.failed()) {
-            log.warning("Failed to load the config file");
-            // load defaults
-            config.put("httpPort", 8080).put("instances", 1);
+            log.severe("Failed to load the config file; exiting");
+            vertx.close();
           } else {
             config = ar.result();
             vertx.deployVerticle(
@@ -66,5 +66,21 @@ public class Main {
                 });
           }
         });
+  }
+
+  public static void printBanner() {
+    System.out.println("                        _              ");
+    System.out.println("                       / |_            ");
+    System.out.println(" _   __  .---.  _ .--.`| |-'   _   __  ");
+    System.out.println("[ \\ [  ]/ /__\\\\[ `/'`\\]| |    [ \\ [  ] ");
+    System.out.println(" \\ \\/ / | \\__., | |    | |, _  > '  <  ");
+    System.out.println("  \\__/   '.__.'[___]   \\__/(_)[__]`\\_] ");
+    System.out.println("        __        _                    ");
+    System.out.println("       [  |      (_)                   ");
+    System.out.println(" .--.   | |--.   __   ____             ");
+    System.out.println("( (`\\]  | .-. | [  | [_   ]            ");
+    System.out.println(" `'.'.  | | | |  | |  .' /_            ");
+    System.out.println("[\\__) )[___]|__][___][_____]           ");
+    System.out.println("                                       ");
   }
 }

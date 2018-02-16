@@ -6,3 +6,4 @@ A fun filled project exploring the vert.x framework using Java
 
 ### Test the Http endpoints with Postman
 see the items array in sample.json
+note: the port in the config might not match the ports used in the sample.json

@@ -6,7 +6,7 @@
 
     <groupId>com.philaporter</groupId>
     <artifactId>vertx-fun</artifactId>
-    <version>2.9.2018</version>
+    <version>2.16.2018</version>
     <name>Basic Vert.x Project</name>
 
     <build>

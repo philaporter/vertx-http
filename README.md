@@ -4,7 +4,7 @@ A fun filled project exploring the vert.x framework using Java and Redis
 ### Getting started
 ```git clone <repo>```<br />
 ```mvn clean install```<br />
-```java -jar target/vertx-fun-2.9.2018-fat.jar```
+```java -jar target/vertx-fun-2.16.2018-fat.jar```
 
 #### Redis dependency
 ```brew update```<br />

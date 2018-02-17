@@ -2,6 +2,7 @@ package com.philaporter;
 
 import com.philaporter.verticles.HttpVerticle;
 import com.philaporter.verticles.ProcessingVerticle;
+import com.philaporter.verticles.RedisClientVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -55,6 +56,14 @@ public class Main {
                             log.info(
                                 "Successfully deployed ProcessingVerticle with id: "
                                     + processingRes.result());
+                            vertx.deployVerticle(RedisClientVerticle.class.getName(), redisClientRes -> {
+                                if(redisClientRes.succeeded()) {
+                                    log.info("Successfully deployed RedisClientVerticle with id: " + redisClientRes.result());
+                                } else {
+                                    log.warning("RedisClientVerticle failed to deploy");
+                                    vertx.close();
+                                }
+                            });
                           } else {
                             log.warning("ProcessingVerticle failed to deploy");
                             vertx.close();

@@ -2,14 +2,13 @@ package com.philaporter.handlers;
 
 import com.philaporter.verticles.HttpVerticle;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+/** @author Philip Porter */
 public class HttpHandler {
 
   private Vertx vertx = null;

@@ -4,11 +4,8 @@ import com.philaporter.Main;
 import com.philaporter.handlers.HttpHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 import java.io.IOException;

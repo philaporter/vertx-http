@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+/** @author Philip Porter */
 public class ProcessingVerticle extends AbstractVerticle {
 
   private static Logger log = null;
@@ -23,7 +24,7 @@ public class ProcessingVerticle extends AbstractVerticle {
     log = Logger.getLogger(ProcessingVerticle.class.getName());
 
     eb = vertx.eventBus();
-    final ProcessingHandler handler = new ProcessingHandler();
+    final ProcessingHandler handler = new ProcessingHandler(vertx);
     eb.consumer("processingHandler", handler::handle);
   }
 }

@@ -15,8 +15,8 @@ import java.util.logging.Logger;
 /** @author Philip Porter */
 public class RedisClientVerticle extends AbstractVerticle {
 
-  private static Logger log = null;
-  private EventBus eb = null;
+  private static Logger log;
+  private EventBus eb;
 
   @Override
   public void start() throws IOException {

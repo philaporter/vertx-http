@@ -11,8 +11,8 @@ import io.vertx.ext.web.RoutingContext;
 /** @author Philip Porter */
 public class HttpHandler {
 
-  private Vertx vertx = null;
-  private EventBus eb = null;
+  private Vertx vertx;
+  private EventBus eb;
   public static final String PROCESSING_HANDLER = "processingHandler";
 
   public HttpHandler(Vertx vertx) {

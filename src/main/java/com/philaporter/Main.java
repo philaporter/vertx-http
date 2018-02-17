@@ -18,8 +18,8 @@ import java.util.logging.Logger;
 /** @author Philip Porter */
 public class Main {
 
-  public static Logger log = null;
-  public static JsonObject config = null;
+  public static Logger log;
+  public static JsonObject config;
 
   public static void main(String[] args) throws IOException {
     // TODO: Replace this logging setup with something better

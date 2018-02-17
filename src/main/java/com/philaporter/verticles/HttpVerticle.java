@@ -18,9 +18,9 @@ import java.util.logging.Logger;
 /** @author Philip Porter */
 public class HttpVerticle extends AbstractVerticle {
 
-  private static Logger log = null;
+  private static Logger log;
   public static Map<String, JsonObject> employees = new HashMap<>();
-  private EventBus eb = null;
+  private EventBus eb;
 
   private void addEmployee(JsonObject employee) {
     employees.put(employee.getString("empId"), employee);

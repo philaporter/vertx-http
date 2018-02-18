@@ -1,10 +1,8 @@
 package com.philaporter.handlers;
 
-import com.philaporter.verticles.HttpVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -36,10 +34,8 @@ public class HttpHandler {
     if (empId != null) {
       final JsonObject json = new JsonObject().put("empId", empId).put("action", "get");
       eb.publish(PROCESSING_HANDLER, json);
-      response
-          .putHeader("content-type", "application/json")
-          .end(json.encodePrettily());
-      //TODO: Consider changing what is actually return as a request, instead of emphasizing the console info
+      response.putHeader("content-type", "application/json").end(json.encodePrettily());
+      // TODO: Consider changing what is actually return as a request, instead of emphasizing the console info
     } else {
       sendError(418, response);
     }

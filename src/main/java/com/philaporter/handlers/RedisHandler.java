@@ -124,7 +124,6 @@ public class RedisHandler implements Handler<Message<Object>> {
                               log.info(employee.result());
                             });
                       });
-              // list.getJsonArray(0).stream().forEach(item -> {});
             }
           }
         });

@@ -31,6 +31,7 @@ public class RedisHandler implements Handler<Message<Object>> {
   }
 
   public void initializeRedisEntries() {
+    log.info("Initializing the database with sample entries: ");
     client.set(
         "a1b2c3d4",
         new JsonObject()
@@ -95,9 +96,8 @@ public class RedisHandler implements Handler<Message<Object>> {
     client.get(
         json.getString("empId"),
         result -> {
-          String body = result.result();
           if (result.succeeded()) {
-            log.info("Found employee record" + body);
+            log.info("Found employee record" + result.result());
           } else {
             log.warning("Couldn't find record for employee " + json.getString("empId"));
           }
@@ -114,7 +114,17 @@ public class RedisHandler implements Handler<Message<Object>> {
           } else {
             JsonArray list = result.result();
             if (list != null) {
-              log.info(list.encodePrettily());
+              log.info("Found the following employees: ");
+              list.getJsonArray(1)
+                  .forEach(
+                      item -> {
+                        client.get(
+                            item.toString(),
+                            employee -> {
+                              log.info(employee.result());
+                            });
+                      });
+              // list.getJsonArray(0).stream().forEach(item -> {});
             }
           }
         });
@@ -122,31 +132,32 @@ public class RedisHandler implements Handler<Message<Object>> {
 
   public void add(JsonObject json) {
     client.set(
-        json.getString("empId"),
-        json.toString(),
+        json.getJsonObject("employee").getString("empId"),
+        json.getJsonObject("employee").toString(),
         result -> {
           if (result.failed()) {
-            log.warning("Couldn't add " + json.getString("empId"));
+            log.warning("Couldn't add " + json.getJsonObject("employee").toString());
           } else {
-            log.info("Added " + json.getString("empId"));
+            log.info("Added " + json.getJsonObject("employee").toString());
           }
         });
   }
 
   public void update(JsonObject json) {
     client.set(
-        json.getString("empId"),
-        json.toString(),
+        json.getJsonObject("employee").getString("empId"),
+        json.getJsonObject("employee").toString(),
         result -> {
           if (result.failed()) {
-            log.warning("Couldn't update " + json.getString("empId"));
+            log.warning("Couldn't update " + json.getJsonObject("employee"));
           } else {
-            log.info("Updated " + json.getString("empId"));
+            log.info("Updated " + json.getJsonObject("employee"));
           }
         });
   }
 
   public void remove(JsonObject json) {
+    System.out.println(json.toString());
     client.del(
         json.getString("empId"),
         result -> {

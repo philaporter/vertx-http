@@ -21,31 +21,25 @@ public class HttpHandler {
   }
 
   public void handleGetEmployees(RoutingContext routingContext) {
-    JsonArray list = new JsonArray();
-    HttpVerticle.employees.forEach((k, v) -> list.add(v));
-    final JsonObject json =
-        new JsonObject()
-            .put("employee", list)
-            .put("action", "getAll");
+    final JsonObject json = new JsonObject().put("action", "getAll");
     eb.publish(PROCESSING_HANDLER, json);
     routingContext
         .response()
         .putHeader("content-type", "application/json")
         .end(json.encodePrettily());
+    // TODO: Connect the response from the RedisHandler with the response here
   }
 
   public void handleGetEmployee(RoutingContext routingContext) {
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
-    if (empId != null && HttpVerticle.employees.containsKey(empId)) {
-      final JsonObject json =
-          new JsonObject()
-              .put("employee", HttpVerticle.employees.get(empId))
-              .put("action", "get");
+    if (empId != null) {
+      final JsonObject json = new JsonObject().put("empId", empId).put("action", "get");
       eb.publish(PROCESSING_HANDLER, json);
       response
           .putHeader("content-type", "application/json")
           .end(json.encodePrettily());
+      //TODO: Consider changing what is actually return as a request, instead of emphasizing the console info
     } else {
       sendError(418, response);
     }
@@ -57,15 +51,9 @@ public class HttpHandler {
     if (empId != null) {
       JsonObject employee = routingContext.getBodyAsJson();
       if (employee != null) {
-        HttpVerticle.employees.put(empId, employee);
-        final JsonObject json =
-            new JsonObject()
-                .put("employee", employee)
-                .put("action", "add");
+        final JsonObject json = new JsonObject().put("employee", employee).put("action", "add");
         eb.publish(PROCESSING_HANDLER, json);
-        response
-            .putHeader("content-type", "application/json")
-            .end(json.encodePrettily());
+        response.putHeader("content-type", "application/json").end(json.encodePrettily());
       } else {
         sendError(418, response);
       }
@@ -80,15 +68,9 @@ public class HttpHandler {
     if (empId != null) {
       JsonObject employee = routingContext.getBodyAsJson();
       if (employee != null) {
-        HttpVerticle.employees.replace(empId, employee);
-        final JsonObject json =
-            new JsonObject()
-                .put("employee", employee)
-                .put("action", "update");
+        final JsonObject json = new JsonObject().put("employee", employee).put("action", "update");
         eb.publish(PROCESSING_HANDLER, json);
-        response
-            .putHeader("content-type", "application/json")
-            .end(json.encodePrettily());
+        response.putHeader("content-type", "application/json").end(json.encodePrettily());
       } else {
         sendError(418, response);
       }
@@ -100,16 +82,10 @@ public class HttpHandler {
   public void handleRemoveEmployee(RoutingContext routingContext) {
     String empId = routingContext.request().getParam("empId");
     HttpServerResponse response = routingContext.response();
-    if (empId != null && HttpVerticle.employees.containsKey(empId)) {
-      JsonObject json =
-          new JsonObject()
-              .put("employee", HttpVerticle.employees.get(empId))
-              .put("action", "remove");
+    if (empId != null) {
+      final JsonObject json = new JsonObject().put("empId", empId).put("action", "remove");
       eb.publish(PROCESSING_HANDLER, json);
-      HttpVerticle.employees.remove(empId);
-      response
-              .putHeader("content-type", "application/json")
-              .end(json.encodePrettily());
+      response.putHeader("content-type", "application/json").end(json.encodePrettily());
     } else {
       sendError(418, response);
     }
